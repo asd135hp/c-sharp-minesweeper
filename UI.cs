@@ -1,11 +1,11 @@
 ﻿using System;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using MultiplayerMinesweeper.Core;
 using MultiplayerMinesweeper.Core.Mode;
+using MultiplayerMinesweeper.Core.Multiplayer;
 using MultiplayerMinesweeper.Drawing.UI;
 using MultiplayerMinesweeper.Drawing.Component;
-using MultiplayerMinesweeper.Core.Multiplayer;
-using System.Threading.Tasks;
 
 namespace MultiplayerMinesweeper
 {
@@ -14,6 +14,9 @@ namespace MultiplayerMinesweeper
         private static GraphicalPage _currentPage;
         private static readonly Dictionary<string, UIPage> Pages = new Dictionary<string, UIPage>();
 
+        /// <summary>
+        /// Gets currently drawn page
+        /// </summary>
         public static GraphicalPage CurrentPage
         {
             get
@@ -27,6 +30,9 @@ namespace MultiplayerMinesweeper
             private set => _currentPage = value;
         }
 
+        /// <summary>
+        /// If this method is called, the page will be the previous page provided of current page
+        /// </summary>
         public static void Back()
         {
             if (_currentPage is GamePage) (_currentPage as GamePage).CleanUp();
@@ -35,6 +41,9 @@ namespace MultiplayerMinesweeper
             _currentPage = _currentPage?.PreviousPage as UIPage ?? _currentPage;
         }
 
+        /// <summary>
+        /// General pages initializer
+        /// </summary>
         private static void Initialize()
         {
             _currentPage = Pages["base"] = Welcome();
@@ -48,6 +57,10 @@ namespace MultiplayerMinesweeper
             Pages["pre-multiplayer"] = PreMultiplayerPage();
         }
 
+        /// <summary>
+        /// Welcome page initializer
+        /// </summary>
+        /// <returns></returns>
         private static UIPage Welcome()
         {
             UIPage page = new UIPage();
@@ -104,6 +117,16 @@ namespace MultiplayerMinesweeper
             return page;
         }
 
+        /// <summary>
+        /// Pre of any custom game mode (like custom or multiplayer)
+        /// But now it is only for custom game mode
+        /// because I can not prove the genuinity of Multiplayer mode
+        /// SplashKit does not allow me to have 2 windows be drawn at the same time
+        /// -> Multiplayer mode is abandoned
+        /// </summary>
+        /// <param name="actionToNewPage"></param>
+        /// <param name="prevPage"></param>
+        /// <returns></returns>
         private static UIPage CustomizeGamePage(Action<int, int, int> actionToNewPage, GraphicalPage prevPage = null)
         {
             UIPage page = new UIPage()
@@ -112,7 +135,7 @@ namespace MultiplayerMinesweeper
             };
 
             var objects = new List<UIRectangle>();
-            
+
             objects.AddRange(new UIRectangle[]{
                 new Button(0, 0, "Customize your game", Constants.HEADER_FONT_SIZE)
                 {
@@ -193,9 +216,13 @@ namespace MultiplayerMinesweeper
             return page;
         }
 
+        /// <summary>
+        /// Pre of multiplayer page initializer
+        /// </summary>
+        /// <returns></returns>
         private static UIPage PreMultiplayerPage()
         {
-            UIPage page = new UIPage(){ PreviousPage = Pages["base"] };
+            UIPage page = new UIPage() { PreviousPage = Pages["base"] };
 
             page.PushUIRectangle(new UIRectangle[]
             {
@@ -224,7 +251,6 @@ namespace MultiplayerMinesweeper
                                 task.Wait();
 
                                 CurrentPage = task.Result;
-                                Console.WriteLine(CurrentPage.ToString());
                             }), CurrentPage);
                     }
                 },
@@ -256,6 +282,14 @@ namespace MultiplayerMinesweeper
             return page;
         }
 
+        /// <summary>
+        /// Change to result page with used flags number, total flags number, time played and is win or not
+        /// to get the accordingly result
+        /// </summary>
+        /// <param name="usedFlags"></param>
+        /// <param name="totalFlags"></param>
+        /// <param name="timePlayed"></param>
+        /// <param name="isWin"></param>
         public static void ChangeToResultPage(int usedFlags, int totalFlags, int timePlayed, bool isWin)
             => CurrentPage = new ResultPage(usedFlags, totalFlags, timePlayed, isWin)
             {

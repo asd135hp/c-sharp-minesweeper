@@ -19,9 +19,14 @@ public class Program
             if (SplashKit.MouseClicked(MouseButton.LeftButton))
                 UI.CurrentPage.Click(MouseButton.LeftButton);
 
-            if (SplashKit.MouseClicked(MouseButton.RightButton) && UI.CurrentPage is GamePage)
-                (UI.CurrentPage as GamePage).Click(MouseButton.RightButton);
-
+            if (SplashKit.MouseClicked(MouseButton.RightButton))
+            {
+                if(UI.CurrentPage is GamePage)
+                    (UI.CurrentPage as GamePage).Click(MouseButton.RightButton);
+                if (UI.CurrentPage is MultiplayerPage)
+                    (UI.CurrentPage as MultiplayerPage).Click(MouseButton.RightButton);
+            }
+                
             if (SplashKit.KeyTyped(KeyCode.EscapeKey)) UI.Back();
 
             // clear window with background color
