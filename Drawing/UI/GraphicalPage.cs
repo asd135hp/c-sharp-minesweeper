@@ -33,7 +33,9 @@ namespace MultiplayerMinesweeper.Drawing.UI
             }
         }
 
-        public void Draw() => Draw(SplashKit.CurrentWindow());
-        public abstract void Draw(Window window);
+        /// <summary>
+        /// Draw everything the page has to offer to the screen.
+        /// </summary>
+        public abstract void Draw();
     }
 }

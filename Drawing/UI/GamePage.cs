@@ -69,13 +69,13 @@ namespace MultiplayerMinesweeper.Drawing.UI
             }
         }
 
-        public override void Draw(Window window)
+        public override void Draw()
         {
             int size = _mode.SquareSize, x = 0, y = 0;
             var p = _properties;
 
             // draw information bar
-            InformationBar.Draw(_stopWatch.GetTime(), (_mode.Board as MinesweeperBoard).Flag, window);
+            InformationBar.Draw(_stopWatch.GetTime(), (_mode.Board as MinesweeperBoard).Flag);
 
             // draw each squares on the board
             foreach (string representativeChar in _mode.Board.DrawableBoard)
@@ -83,7 +83,8 @@ namespace MultiplayerMinesweeper.Drawing.UI
                 // draw the whole square
                 Bitmap image = BitmapList.GetBitmap(representativeChar);
                 // x and y must all be substracted with its respective offsets
-                window.DrawBitmap(
+                SplashKit.DrawBitmapOnWindow(
+                    SplashKit.CurrentWindow(),
                     image,
                     p.MarginLeft + x * size - p.SquareOffsetX,
                     p.MarginTop + y * size - p.SquareOffsetY,
@@ -91,7 +92,7 @@ namespace MultiplayerMinesweeper.Drawing.UI
                 );
 
                 // advances to another row
-                if(x++ == _mode.Board.Width - 1)
+                if (x++ == _mode.Board.Width - 1)
                 {
                     x = 0;
                     y++;

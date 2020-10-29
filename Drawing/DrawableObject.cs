@@ -1,5 +1,4 @@
 ﻿using SplashKitSDK;
-using System.IO;
 
 namespace MultiplayerMinesweeper.Drawing
 {
@@ -29,6 +28,5 @@ namespace MultiplayerMinesweeper.Drawing
         public readonly Color Color;
 
         public abstract void Draw();
-        public abstract void Draw(Window window);
     }
 }

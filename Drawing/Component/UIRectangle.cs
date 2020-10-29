@@ -36,14 +36,9 @@ namespace MultiplayerMinesweeper.Drawing.Component
             if (VerticalAlign != 0) Y = (windowHeight - Height) * VerticalAlign;
         }
 
-        public override void Draw() => Draw(SplashKit.CurrentWindow());
-        public override void Draw(Window window)
-        {
-            // draw outline
-            SplashKit.DrawRectangleOnWindow(window, BorderColor, X, Y, Width, Height, new DrawingOptions()
-            {
-                LineWidth = BorderThickness
-            });
-        }
+        /// <summary>
+        /// Draw outline
+        /// </summary>
+        public override void Draw() => SplashKit.DrawRectangle(BorderColor, X, Y, Width, Height);
     }
 }

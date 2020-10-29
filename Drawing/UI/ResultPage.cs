@@ -1,5 +1,4 @@
-﻿using SplashKitSDK;
-using System;
+﻿using System;
 using System.Text;
 using MultiplayerMinesweeper.Core;
 using MultiplayerMinesweeper.Drawing.Component;
@@ -65,12 +64,12 @@ namespace MultiplayerMinesweeper.Drawing.UI
             );
         }
 
-        public override void Draw(Window window)
+        public override void Draw()
         {
             foreach (var obj in _drawingObjects)
             {
-                if (obj is Button) { (obj as Button).Draw(window); continue; }
-                if (obj is Range) { (obj as Range).Draw(window); continue; }
+                if (obj is Button) { (obj as Button).Draw(); continue; }
+                if (obj is Range) { (obj as Range).Draw(); continue; }
             }
         }
     }

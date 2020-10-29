@@ -244,13 +244,14 @@ namespace MultiplayerMinesweeper
                             {
                                 // then to loading and to multiplayer page
                                 CurrentPage = new LoadingPage(width, height, bomb, CurrentPage);
-                                var task = (CurrentPage as LoadingPage).GetMultiplayerPage(
+                                using(var task = (CurrentPage as LoadingPage).GetMultiplayerPage(
                                     Pages["base"],
                                     MultiplayerRole.Host
-                                );
-                                task.Wait();
-
-                                CurrentPage = task.Result;
+                                ))
+                                {
+                                    task.Wait();
+                                    CurrentPage = task.Result;
+                                }
                             }), CurrentPage);
                     }
                 },
@@ -262,13 +263,14 @@ namespace MultiplayerMinesweeper
                     {
                         // landing on loading page first and then multiplayer page
                         CurrentPage = new LoadingPage(CurrentPage);
-                        var task = (CurrentPage as LoadingPage).GetMultiplayerPage(
+                        using(var task = (CurrentPage as LoadingPage).GetMultiplayerPage(
                             Pages["base"],
                             MultiplayerRole.Guest
-                        );
-                        task.Wait();
-
-                        CurrentPage = task.Result;
+                        ))
+                        {
+                            task.Wait();
+                            CurrentPage = task.Result;
+                        }
                     })
                 },
                 new Button("Back to main menu", 450, 0)

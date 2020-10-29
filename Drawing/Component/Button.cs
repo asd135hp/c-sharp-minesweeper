@@ -139,11 +139,10 @@ namespace MultiplayerMinesweeper.Drawing.Component
             Text.Y += Y;
         }
 
-        public override void Draw() => Draw(SplashKit.CurrentWindow());
-        public override void Draw(Window window)
+        public override void Draw()
         {
-            base.Draw(window);
-            Text.Draw(window);
+            base.Draw();
+            Text.Draw();
         }
     }
 }

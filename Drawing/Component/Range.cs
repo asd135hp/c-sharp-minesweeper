@@ -85,7 +85,6 @@ namespace MultiplayerMinesweeper.Drawing.Component
             });
         }
 
-        public override void Draw() => Draw(SplashKit.CurrentWindow());
-        public override void Draw(Window window) => _buttons.ForEach((button) => button.Draw(window));
+        public override void Draw() =>  _buttons.ForEach((button) => button.Draw());
     }
 }

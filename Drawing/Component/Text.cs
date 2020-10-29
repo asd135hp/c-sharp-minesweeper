@@ -48,10 +48,6 @@ namespace MultiplayerMinesweeper.Drawing.Component
             return new Size(width, height);
         }
 
-        public override void Draw() => Draw(SplashKit.CurrentWindow());
-        public override void Draw(Window window)
-        {
-            SplashKit.DrawTextOnWindow(window, _text, Color, Font, FontSize, X, Y);
-        }
+        public override void Draw() => SplashKit.DrawText(_text, Color, Font, FontSize, X, Y);
     }
 }

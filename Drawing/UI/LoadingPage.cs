@@ -21,7 +21,7 @@ namespace MultiplayerMinesweeper.Drawing.UI
             {
                 new Button("Your game id is:")
                 {
-                    HorizontalAlign = 0.1f,
+                    HorizontalAlign = 0.05f,
                     VerticalAlign = 0.05f,
                     BorderColor = Constants.BACKGROUND_COLOR
                 },
@@ -46,15 +46,25 @@ namespace MultiplayerMinesweeper.Drawing.UI
             Task.Run(() =>
             {
                 var queue = GetQueue();
+                if(queue.Count == 0)
+                {
+                    DisplayErrorMessage("There is currently no game queued. Please try again!");
+                    return;
+                }
+
                 var randIdTask = GetRandomGameIDFromQueue(queue);
                 randIdTask.Wait();
                 int id = randIdTask.Result;
-                _drawingObjects[0] = new Button($"Your game id is: {id}")
+
+                var text = _drawingObjects[0] = new Button($"Your game id is: {id}")
                 {
-                    HorizontalAlign = 0.1f,
+                    HorizontalAlign = 0.05f,
                     VerticalAlign = 0.05f,
                     BorderColor = Constants.BACKGROUND_COLOR
                 };
+                text.AlignHorizontally();
+                text.AlignVertically();
+
                 Upload(queue);
 
                 // get the game information
@@ -76,7 +86,7 @@ namespace MultiplayerMinesweeper.Drawing.UI
                 int id = GetCurrentGlobalGameID();
                 var text = _drawingObjects[0] = new Button($"Your game id is: {id}")
                 {
-                    HorizontalAlign = 0.1f,
+                    HorizontalAlign = 0.05f,
                     VerticalAlign = 0.05f,
                     BorderColor = Constants.BACKGROUND_COLOR
                 };
@@ -91,27 +101,31 @@ namespace MultiplayerMinesweeper.Drawing.UI
             });
         }
 
-        private void AwaitTask(Task task)
+        private bool AwaitTask(Task task)
         {
             if (!task.Wait(Constants.TIMEOUT))
+            {
                 DisplayErrorMessage("Unstable internet. Please try again later!");
+                return false;
+            }
+            return true;
         }
 
         private void DisplayErrorMessage(string message)
         {
-            var temp = new Button(0, 0, message, Constants.HEADER_FONT_SIZE)
+            _drawingObjects[1] = new Button(0, 0, message, Constants.HEADER_FONT_SIZE)
             {
                 HorizontalAlign = 0.5f,
                 VerticalAlign = 0.5f,
                 BorderColor = Constants.BACKGROUND_COLOR
             };
-            _drawingObjects[1] = temp;
 
             // adding new button that tells user to go back to previous page
             _drawingObjects.Add(new Button("Back")
             {
                 HorizontalAlign = 0.5f,
-                VerticalAlign = 0.75f
+                VerticalAlign = 0.75f,
+                Action = () => MultiplayerMinesweeper.UI.Back()
             });
 
             // align every objects manually...
@@ -125,9 +139,8 @@ namespace MultiplayerMinesweeper.Drawing.UI
         {
             var task = Firebase.Get("queue");
             List<double> queue = new List<double>();
-
-            AwaitTask(task);
-            if (task.Result == "null") return queue;
+            
+            if (!AwaitTask(task) || task.Result == "null") return queue;
 
             foreach(string _id in task.Result.Trim('[', ']').Split(','))
                 if (int.TryParse(_id.Trim(), out int id) && id >= 0)
@@ -197,11 +210,11 @@ namespace MultiplayerMinesweeper.Drawing.UI
                 return page;
             });
 
-        public override void Draw(Window window)
+        public override void Draw()
         {
             // data race happens here where the collection is altered while the whole page is drawing
             // therefore, using collection type loop is inappropriate
-            for (int i = 0; i < _drawingObjects.Count; i++) _drawingObjects[i].Draw(window);
+            for (int i = 0; i < _drawingObjects.Count; i++) _drawingObjects[i].Draw();
         }
     }
 }

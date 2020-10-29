@@ -1,8 +1,8 @@
 using SplashKitSDK;
+using System.Threading.Tasks;
 using MultiplayerMinesweeper;
 using MultiplayerMinesweeper.Core;
 using MultiplayerMinesweeper.Drawing.UI;
-using MultiplayerMinesweeper.Drawing.Reusable;
 
 public class Program
 {
@@ -12,6 +12,22 @@ public class Program
 
         do
         {
+            /*
+                this solution seems to work fine.
+                Normal loop usually runs under 1 milliseconds in each loop (for fast cases)
+                and may be because of large overhead
+                when the multiplayer game is trying to connect to the server
+                that SplashKit will instantly froze the whole window at that time.
+                Therefore, by adding a little delay
+                that is unnoticeable to most players (in this case, 5 millisecs),
+                it helps the loop go over that huge overhead
+                (my hunch for something can never be true, though)
+                NOTE: this is entirely my trial and errors attempts
+                and even if I search this situation up on Google,
+                nothing will even match what I am going through...
+            */
+            Task.Delay(5).Wait();
+
             // refresh window
             SplashKit.RefreshScreen();
             SplashKit.ProcessEvents();

@@ -29,10 +29,9 @@ namespace MultiplayerMinesweeper.Drawing.Reusable
             ScaleY = 25f / BitmapList.GetBitmap(FLAG).Height
         };
 
-        public static void Draw(string time, int flagNumber, Window window,
+        public static void Draw(string time, int flagNumber,
             int screenWidth = Constants.WINDOW_WIDTH, bool smaller = false, int marginLeft = -1)
         {
-
             // pre-calculated values for information bar
             double quartX = screenWidth * 0.25,
                 centerX = screenWidth * 0.5,
@@ -62,7 +61,8 @@ namespace MultiplayerMinesweeper.Drawing.Reusable
 
                 // draw information bar
                 // draw clock icon and its timer value
-                window.DrawBitmap(
+                SplashKit.DrawBitmapOnWindow(
+                    SplashKit.CurrentWindow(),
                     clockIcon,
                     centerX - quartX / 2 + marginLeft - clockIcon.Width * (1 - cOpts.ScaleX) / 2,
                     centerY / 4 - clockIcon.Height * (1 - cOpts.ScaleY) / 2,
@@ -71,7 +71,8 @@ namespace MultiplayerMinesweeper.Drawing.Reusable
                 timer.Draw();
 
                 // draw flag icon and flags value from MinesweeperBoard
-                window.DrawBitmap(
+                SplashKit.DrawBitmapOnWindow(
+                    SplashKit.CurrentWindow(),
                     flagIcon,
                     centerX - quartX / 2 + marginLeft - flagIcon.Width * (1 - fOpts.ScaleX) / 2,
                     centerY * 0.9 - flagIcon.Width * (1 - fOpts.ScaleY) / 2,
@@ -88,7 +89,8 @@ namespace MultiplayerMinesweeper.Drawing.Reusable
 
             // draw information bar
             // draw clock icon and its timer value
-            window.DrawBitmap(
+            SplashKit.DrawBitmapOnWindow(
+                SplashKit.CurrentWindow(),
                 clockIcon,
                 centerX - quartX,
                 centerY - clockIcon.Height / 2,
@@ -97,7 +99,8 @@ namespace MultiplayerMinesweeper.Drawing.Reusable
             timer.Draw();
 
             // draw flag icon and flags value from MinesweeperBoard
-            window.DrawBitmap(
+            SplashKit.DrawBitmapOnWindow(
+                SplashKit.CurrentWindow(),
                 flagIcon,
                 centerX + quartX - 110,
                 centerY - flagIcon.Height / 2,

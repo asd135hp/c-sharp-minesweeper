@@ -93,7 +93,7 @@ namespace MultiplayerMinesweeper.Drawing.UI
             }
         }
 
-        private void DrawBoard(string[] board, Window window, bool rotate90Deg = false)
+        private void DrawBoard(string[] board, bool rotate90Deg = false)
         {
             int x = 0, y = 0;
             var props = rotate90Deg ? _opponentProps : _playerProps;
@@ -104,7 +104,8 @@ namespace MultiplayerMinesweeper.Drawing.UI
                 // draw the whole square
                 Bitmap image = BitmapList.GetBitmap(representativeChar);
                 // x and y must all be substracted with its respective offsets
-                window.DrawBitmap(
+                SplashKit.DrawBitmapOnWindow(
+                    SplashKit.CurrentWindow(),
                     image,
                     props.MarginLeft + x * props.SquareSize - props.SquareOffsetX,
                     props.MarginTop + y * props.SquareSize - props.SquareOffsetY,
@@ -129,7 +130,7 @@ namespace MultiplayerMinesweeper.Drawing.UI
             }
         }
 
-        public override void Draw(Window window)
+        public override void Draw()
         {
             // may be the luck with drawing on two windows parallel-ly ran out...
             bool isHost = _role == MultiplayerRole.Host;
@@ -140,24 +141,22 @@ namespace MultiplayerMinesweeper.Drawing.UI
             InformationBar.Draw(
                 TimeFormatter.GetTime(host.Time),
                 host.Flag,
-                window,
                 _playerProps.WindowWidth
             );
-            DrawBoard(host.Board.DrawableBoard, window);
+            DrawBoard(host.Board.DrawableBoard);
 
             // a line in between screens
             int wW = _playerProps.WindowWidth, wH = _playerProps.WindowHeight;
-            SplashKit.DrawLineOnWindow(window, Constants.TEXT_COLOR, wW, 0, wW, wH);
+            SplashKit.DrawLine(Constants.TEXT_COLOR, wW, 0, wW, wH);
 
             // draw opponent side
             InformationBar.Draw(
                 TimeFormatter.GetTime(guest.Time),
                 guest.Flag,
-                window,
                 _opponentProps.WindowWidth, true,
                 _playerProps.WindowWidth
             );
-            DrawBoard(guest.Board.DrawableBoard, window, true);
+            DrawBoard(guest.Board.DrawableBoard, true);
         }
     }
 }
