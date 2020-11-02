@@ -29,15 +29,18 @@ namespace MultiplayerMinesweeper.Core.Multiplayer.TaskManagement
                     // tasks that are finished, leave it as it be
                     // the first unfinished task will break the reading loop
                     // and merging data start from here
-                    int count = 0;
+                    int count = 0, jsonIndex = -1;
                     foreach(var task in _taskList)
                     {
-                        if (task.IsCompleted && (taskVerification?.Invoke(task.Result) ?? true)) count++;
-                        else break;
+                        if (!task.IsCompleted) break;
+                        // downside: the first tasks that are supposedly null can not be removed
+                        // there must be some more gating machanism to be used
+                        if (taskVerification?.Invoke(task.Result) ?? true) jsonIndex = count;
+                        count++;
                     }
 
                     // merge data if downloading
-                    if (count > 0) action?.Invoke(_taskList[count - 1].Result);
+                    if (jsonIndex != -1) action?.Invoke(_taskList[jsonIndex].Result);
                     RemoveTask(count);
 
                     // wait for 1 sec (default)
@@ -70,7 +73,7 @@ namespace MultiplayerMinesweeper.Core.Multiplayer.TaskManagement
 
         /// <summary>
         /// Close the current task management action and also its instance.
-        /// It is suggested to cancel the tokenSource first and until then could you call this method.
+        /// It is recommended to cancel the tokenSource first and until then could you call this method.
         /// Alternatively, you could provide the tokenSource parameter.
         /// Check the paramter's description first, before using it!
         /// </summary>
@@ -79,19 +82,18 @@ namespace MultiplayerMinesweeper.Core.Multiplayer.TaskManagement
         /// If not, the task will only be closed at the end of the program's cycle and no more instances
         /// could be made anymore.
         /// </param>
-        public void Close(CancellationTokenSource tokenSource = null)
+        public virtual void Close(CancellationTokenSource tokenSource = null)
         {
             _isClosing = true;
 
-            if(_instance != null)
+            if (_instance != null)
             {
                 // if user provides a tokenSource, use it instead
                 tokenSource?.Cancel();
 
                 Logger.Log("Disposing main task...");
                 // wait and dispose the main task
-                _mainTask?.Wait();
-                _mainTask?.Dispose();
+                if (!(_mainTask?.IsCanceled ?? false)) _mainTask?.Wait();
                 Logger.Log("Main task disposed!");
 
                 // set instance to null for gc and next create instance cycle

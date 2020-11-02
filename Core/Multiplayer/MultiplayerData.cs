@@ -1,4 +1,5 @@
 ﻿using SplashKitSDK;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 
 namespace MultiplayerMinesweeper.Core.Multiplayer
@@ -28,11 +29,19 @@ namespace MultiplayerMinesweeper.Core.Multiplayer
         public readonly PlayerData Host, Guest;
         public readonly GameSettings GameSettings;
 
-        public void ChangeGameState(GameState state)
+        public void ChangeGameState(GameState state, bool runTask = true, bool waitTask = false)
         {
             State = state;
-            Firebase.Put(((int)State).ToString(), $"{Constants.GAMENAME}{GameSettings.GameID}/state")
-                .Wait(Constants.TIMEOUT);
+            if (runTask)
+            {
+                var task = Task.Run(() =>
+                {
+                    Firebase.Put(((int)State).ToString(), $"{Constants.GAMENAME}{GameSettings.GameID}/state")
+                        .Wait(Constants.TIMEOUT);
+                });
+
+                if (waitTask) task.Wait();
+            }
         }
 
         public void Merge(string jsonString, MultiplayerRole role) => Merge(SplashKit.CreateJson(jsonString), role);

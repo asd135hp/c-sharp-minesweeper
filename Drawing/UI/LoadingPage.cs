@@ -96,8 +96,10 @@ namespace MultiplayerMinesweeper.Drawing.UI
 
                 // get settings and also upload new settings too
                 queue.Add(id);
-                _settings = new GameSettings(width, height, bomb, id);
-                Upload(queue, id, _settings.ToJsonString());
+
+                GameSettings settings = new GameSettings(width, height, bomb, id);
+                Upload(queue, id, settings.ToJsonString());
+                _settings = settings;
             });
         }
 

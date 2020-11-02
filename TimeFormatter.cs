@@ -7,7 +7,7 @@
         {
             int hours = time / 3600,
                 minutes = (time - hours) / 60,
-                seconds = time - hours - minutes;
+                seconds = time - hours * 3600 - minutes * 60;
 
             return hours != 0 ?
                 $"{AddZero(hours)}:{AddZero(minutes)}:{AddZero(seconds)}" :

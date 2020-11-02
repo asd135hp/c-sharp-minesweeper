@@ -4,11 +4,14 @@ namespace MultiplayerMinesweeper.Core.BoardComponent
 {
     class UncoveredSquare : Square
     {
-        public UncoveredSquare(Square square) : base(square.Value)
+        public UncoveredSquare(int value) : base(value)
+        {
+            _type = SquareType.Normal;
+        }
+        public UncoveredSquare(Square square) : this(square.Value)
         {
             if (!square.Covered)
                 throw new ArgumentException("Could not convert any other kind of squares than CoveredSquare to UncoveredSquare");
-            _type = SquareType.Normal;
         }
 
         public override string AsChar => Value == -1 ? "b" : Value.ToString();

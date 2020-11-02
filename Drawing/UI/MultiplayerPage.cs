@@ -52,14 +52,12 @@ namespace MultiplayerMinesweeper.Drawing.UI
 
         public override void Click(MouseButton clickedButton)
         {
-            // it sounds weird but this is just reusing method
-            if (_connection.IsConnectionClosed) CloseConnection();
-
             if (_connection.CurrentData.State == GameState.Playing)
             {
                 var position = SplashKit.MousePosition();
                 var p = _playerProps;
-                int size = p.SquareSize,
+                int squareValue = 0,
+                    size = p.SquareSize,
                     x = (int)Math.Floor((position.X - p.MarginLeft) / size),
                     y = (int)Math.Floor((position.Y - p.MarginTop) / size);
 
@@ -70,7 +68,7 @@ namespace MultiplayerMinesweeper.Drawing.UI
                 switch (clickedButton)
                 {
                     case MouseButton.LeftButton:
-                        board.RevealSquare(x, y);
+                        squareValue = board.RevealSquare(x, y);
                         break;
                     case MouseButton.RightButton:
                         board.ToggleFlag(x, y);
@@ -80,15 +78,23 @@ namespace MultiplayerMinesweeper.Drawing.UI
                 // if player is winning now (except for 1 edge case on my mind now),
                 // change state of the game
                 // then closes the connection
-                if (board.IsWin)
+                bool isLose = squareValue == -1;
+                if (board.IsWin || isLose)
                 {
                     _connection.CurrentData.ChangeGameState(
-                        _role == MultiplayerRole.Host ? GameState.HostWin : GameState.GuestWin
+                        _role == MultiplayerRole.Host ?
+                            (isLose ? GameState.GuestWin : GameState.HostWin) :
+                            (isLose ? GameState.HostWin : GameState.GuestWin)
                     );
                     CloseConnection();
 
                     // moves the player to result page
-                    MultiplayerMinesweeper.UI.ChangeToResultPage(board.Flag, board.Bomb, _connection.TimePlayed, true);
+                    MultiplayerMinesweeper.UI.ChangeToResultPage(
+                        board.Flag,
+                        board.Bomb,
+                        _connection.TimePlayed,
+                        board.IsWin
+                    );
                 }
             }
         }
@@ -134,13 +140,14 @@ namespace MultiplayerMinesweeper.Drawing.UI
         {
             // may be the luck with drawing on two windows parallel-ly ran out...
             bool isHost = _role == MultiplayerRole.Host;
-            PlayerData host = isHost ? _connection.CurrentData.Host : _connection.CurrentData.Guest,
-                guest = isHost ? _connection.CurrentData.Guest : _connection.CurrentData.Host;
+            MultiplayerData data = _connection.CurrentData;
+            PlayerData host = isHost ? data.Host : data.Guest,
+                guest = isHost ? data.Guest : data.Host;
 
             // draw player side
             InformationBar.Draw(
-                TimeFormatter.GetTime(host.Time),
-                host.Flag,
+                TimeFormatter.GetTime(_connection.TimePlayed),
+                (host.Board as MinesweeperBoard).Flag,
                 _playerProps.WindowWidth
             );
             DrawBoard(host.Board.DrawableBoard);

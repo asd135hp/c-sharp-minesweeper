@@ -22,6 +22,8 @@ namespace MultiplayerMinesweeper.Core.Multiplayer
         private readonly MultiplayerRole _role;
         private readonly StopWatch.StopWatch _stopWatch;
 
+        private bool _requestCloseConnection = false;
+
         public MultiplayerConnection(MultiplayerRole role, GameSettings settings)
         {
             _uploadTask = null;
@@ -42,6 +44,16 @@ namespace MultiplayerMinesweeper.Core.Multiplayer
                     (CurrentData.Guest.Board as MinesweeperBoard).PopulateBomb();
                     break;
             }
+
+            // one more problem: when it's HostWin or GuestWin situation, the connection does not close
+            // it continues to do tasks -> sucks
+            Task.Run(() =>
+            {
+                // preventing multiple threads data racing about closing this connection
+                // only one thread can request closing the connection
+                while (!_requestCloseConnection && !IsConnectionClosed) { }
+                Close();
+            });
         }
 
         public readonly MultiplayerData CurrentData;
@@ -57,13 +69,29 @@ namespace MultiplayerMinesweeper.Core.Multiplayer
         /// If the player is a guest, they must first download the game settings first (not implemented)
         /// </summary>
         /// <returns>True if the establishment is successful or false on failure</returns>
-        public bool Establish()
+        public void Establish()
         {
             _tokenSource = new CancellationTokenSource();
             _cancelToken = _tokenSource.Token;
 
-            // change multiplayer game state
-            CurrentData.ChangeGameState(GameState.Waiting);
+            // change multiplayer game state depending on role
+            switch (_role)
+            {
+                case MultiplayerRole.Guest:
+                    var task = Firebase.Get(GetLink("state"));
+                    task.Wait();
+
+                    // malformed state
+                    if (!int.TryParse(task.Result, out int _state)) Close();
+                    GameState state = (GameState)_state;
+                    if(state == GameState.Connecting || state == GameState.Waiting)
+                        CurrentData.ChangeGameState(GameState.Playing);
+
+                    break;
+                case MultiplayerRole.Host:
+                    CurrentData.ChangeGameState(GameState.Waiting);
+                    break;
+            }
 
             // overall upload task
             _uploadTask = UploadTask.CreateInstance(_cancelToken);
@@ -75,7 +103,8 @@ namespace MultiplayerMinesweeper.Core.Multiplayer
                 try
                 {
                     // the result will be merged
-                    if (result != "") MergeData(result);
+                    Logger.Log(result);
+                    MergeData(result);
                 }
                 catch (Exception e)
                 {
@@ -87,16 +116,16 @@ namespace MultiplayerMinesweeper.Core.Multiplayer
             // main task to initiate both uploading and downloading tasks
             _mainTask = Task.Run(() =>
             {
+                PlayerData data = _role == MultiplayerRole.Host ? CurrentData.Host : CurrentData.Guest;
                 while (!_cancelToken.IsCancellationRequested)
                 {
                     Logger.Log("Doing main task here...");
-                    UploadData(_role == MultiplayerRole.Host ? CurrentData.Host : CurrentData.Guest);
+                    data.Time = TimePlayed;
+                    UploadData(data);
                     DownloadData();
                     Thread.Sleep(1000);
                 }
             }, _cancelToken);
-
-            return true;
         }
 
         /// <summary>
@@ -106,44 +135,33 @@ namespace MultiplayerMinesweeper.Core.Multiplayer
         /// <param name="result"></param>
         private void MergeData(string result)
         {
+            GameState state = CurrentData.State;
             bool isHost = _role == MultiplayerRole.Host;
-            PlayerData player = isHost ? CurrentData.Host : CurrentData.Guest;
-            player.FromJson(result);
+            PlayerData player = isHost ? CurrentData.Host : CurrentData.Guest,
+                opponent = isHost ? CurrentData.Guest : CurrentData.Host;
 
-            // get the state number
-            var task = Firebase.Get(GetLink("state"));
-            if (task.Wait(Constants.TIMEOUT)
-            && int.TryParse(task.Result, out int _state))
+            // merge the right hand side board with downloaded data
+            Logger.Log("Merge downloaded JSON...");
+            opponent.FromJson(result);
+
+            if (state == GameState.Playing) _stopWatch.Start();
+
+            // because the result is received passively, we also need to specify the winning condition
+            // through game state received
+            if (state == GameState.GuestWin || state == GameState.HostWin
+            || state == GameState.HostExited || state == GameState.GuestExited)
             {
-                GameState state = (GameState)_state;
+                if (_requestCloseConnection) return;
 
-                switch (state)
-                {
-                    case GameState.Waiting:
-                        // if game state is waiting, switch it to playing
-                        // because the result starts to be other than an empty string
-                        // -> a simplified board received
-                        CurrentData.ChangeGameState(GameState.Playing);
-                        _stopWatch.Start();
-                        break;
-                    case GameState.Playing:
-                        // while playing, if the host receives a state of GuestWin
-                        // or the guest receives a state of HostWin
-                        // -> loses nonetheless
-                        if ((isHost && state == GameState.GuestWin)
-                        || (!isHost && state == GameState.HostWin))
-                        {
-                            Close();
-                            UI.ChangeToResultPage(
-                                player.Flag,
-                                (player.Board as MinesweeperBoard).Bomb,
-                                player.Time,
-                                false
-                            );
-                            return;
-                        }
-                        break;
-                }
+                // you don't want 2+ times below code executing
+                _requestCloseConnection = true;
+                UI.ChangeToResultPage(
+                    player.Flag,
+                    (player.Board as MinesweeperBoard).Bomb,
+                    player.Time,
+                    state == (isHost ? GameState.HostWin : GameState.GuestWin) ||
+                    state == (isHost ? GameState.GuestExited : GameState.HostExited)
+                );
             }
         }
 
@@ -152,18 +170,15 @@ namespace MultiplayerMinesweeper.Core.Multiplayer
         /// </summary>
         private void UploadData(IJson data)
         {
-            if (_uploadTask != null)
+            string role = _role == MultiplayerRole.Host ? "host" : "opponent";
+
+            _uploadTask?.AddTask(Task.Run(() =>
             {
-                string role = _role == MultiplayerRole.Host ? "host" : "opponent";
+                if (_cancelToken.IsCancellationRequested) return false;
 
-                _uploadTask.AddTask(Task.Run(() =>
-                {
-                    if (_cancelToken.IsCancellationRequested) return false;
-
-                    var task = Firebase.Put(data.ToJsonString(), GetLink(role));
-                    return task.Wait(Constants.TIMEOUT) && task.Result;
-                }, _cancelToken));
-            }
+                var task = Firebase.Put(data.ToJsonString(), GetLink(role));
+                return task.Wait(Constants.TIMEOUT) && task.Result;
+            }, _cancelToken));
         }
 
         /// <summary>
@@ -171,66 +186,73 @@ namespace MultiplayerMinesweeper.Core.Multiplayer
         /// </summary>
         private void DownloadData()
         {
-            if (_downloadTask != null)
+            string role = _role == MultiplayerRole.Host ? "opponent" : "host";
+
+            _downloadTask?.AddTask(Task.Run(() =>
             {
-                string role = _role == MultiplayerRole.Host ? "opponent" : "host";
+                if (_cancelToken.IsCancellationRequested) return "";
 
-                _downloadTask.AddTask(Task.Run(() =>
-                {
-                    if (_cancelToken.IsCancellationRequested) return "";
+                // get game state
+                // malformed game state will make the game unplayable
+                var task = Firebase.Get(GetLink("state"));
+                if (!task.Wait(Constants.TIMEOUT)
+                || task.Result == "null"
+                || !int.TryParse(task.Result, out int state)
+                || !Enum.IsDefined(typeof(GameState), state)) return "";
 
-                    // get game state
-                    // malformed game state will make the game unplayable
-                    var task = Firebase.Get(GetLink("state"));
-                    if (!task.Wait(Constants.TIMEOUT)
-                    || int.TryParse(task.Result, out int state)
-                    || !Enum.IsDefined(typeof(GameState), state)) return "";
+                CurrentData.ChangeGameState((GameState)state, false);
+                Logger.Log("GameState changed");
 
-                    CurrentData.ChangeGameState((GameState)state);
-
-                    // get new data from role
-                    task = Firebase.Get(GetLink(role));
-                    return task.Wait(Constants.TIMEOUT) ? task.Result : "";
-                }, _cancelToken));
-            }
+                // get new data from role
+                task = Firebase.Get(GetLink(role));
+                return task.Wait(Constants.TIMEOUT) ? task.Result : "";
+            }, _cancelToken));
         }
 
         public void Close()
         {
-            string role = _role.ToString();
+            if(!IsConnectionClosed)
+            {
+                string role = _role.ToString();
+                bool isHost = _role == MultiplayerRole.Host;
 
-            // sudden close
-            if(CurrentData.State == GameState.Playing)
-                CurrentData.ChangeGameState(_role == MultiplayerRole.Host ? GameState.HostExited : GameState.GuestExited);
+                // sudden close
+                if (CurrentData?.State == GameState.Playing)
+                    CurrentData?.ChangeGameState(
+                        isHost ? GameState.HostExited : GameState.GuestExited,
+                        true, true
+                    );
 
-            // stop the stop watch
-            _stopWatch.Stop();
+                // stop the stop watch
+                _stopWatch.Stop();
 
-            // cancel the token source first
-            _tokenSource.Cancel();
-            Logger.Log($"Cancel token requested from {role}!");
-            _mainTask.Wait();
-            _mainTask.Dispose();
-            Logger.Log($"Main task finished from {role}");
+                // cancel the token source first
+                _tokenSource.Cancel();
+                Logger.Log($"Cancel token requested from {role}!");
+                _mainTask.Wait();
+                _mainTask.Dispose();
+                Logger.Log($"Main task finished from {role}");
 
-            // then free up every tasks
-            _uploadTask.Close();
-            _downloadTask.Close();
-            Logger.Log($"Other tasks also finished from {role}");
+                // then free up every tasks
+                _uploadTask.Close();
+                _downloadTask.Close();
+                Logger.Log($"Other tasks also finished from {role}");
 
-            // set to null for next check / gc invoker
-            _tokenSource = null;
-            _mainTask = null;
-            _uploadTask = null;
-            _downloadTask = null;
+                // set to null for next check / gc invoker
+                _tokenSource = null;
+                _mainTask = null;
+                _uploadTask = null;
+                _downloadTask = null;
 
-            // prevent creating ghost rooms
-            Firebase.Delete(GetLink("")).Wait(Constants.TIMEOUT);
-            // set flag
-            IsConnectionClosed = true;
+                // leave only settings and game state behind, not deleting all of it...
+                Firebase.Delete(GetLink(isHost ? "host" : "opponent")).Wait(Constants.TIMEOUT);
 
-            // log
-            Logger.Log($"Successfully closed connection to the server from {role}");
+                // set flag
+                IsConnectionClosed = true;
+
+                // log
+                Logger.Log($"Successfully closed connection to the server from {role}");
+            }
         }
     }
 }

@@ -40,13 +40,15 @@ namespace MultiplayerMinesweeper.Core.BoardComponent
             {
                 case "c":
                     return new CoveredSquare(previousSquare.Value);
-                case "u":
                 case "b":
-                    return new UncoveredSquare(previousSquare);
+                    return new UncoveredSquare(-1);
                 case "f":
                     return new FlaggedSquare(previousSquare);
                 default:
-                    throw new ArgumentException("Unsupported character representation!");
+                    if(!int.TryParse(representation, out int value))
+                        throw new ArgumentException("Unsupported character representation!");
+
+                    return new UncoveredSquare(value);
             }
         }
 
