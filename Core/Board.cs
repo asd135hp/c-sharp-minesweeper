@@ -36,6 +36,11 @@ namespace MultiplayerMinesweeper.Core
         public int Height => _height;
         public readonly string[] DrawableBoard;
 
+        /// <summary>
+        /// Merge a stringified board to the current board object.
+        /// Throws an exception when the board is wrong in number of squares
+        /// </summary>
+        /// <param name="board"></param>
         public void MergeBoard(string[] board)
         {
             if (board.Length == Width * Height)

@@ -26,19 +26,26 @@ namespace MultiplayerMinesweeper.Drawing.Component
         /// </summary>
         public int BorderThickness = 1;
 
+        /// <summary>
+        /// To align the object to the whole screen visually,
+        /// this method must be manually invoked
+        /// </summary>
+        /// <param name="windowWidth">Window width for alignment on the (portion of) screen</param>
         public virtual void AlignHorizontally(int windowWidth = Constants.WINDOW_WIDTH)
         {
             if (HorizontalAlign != 0) X = (windowWidth - Width) * HorizontalAlign;
         }
 
+        /// <summary>
+        /// To align the object to the whole screen visually,
+        /// this method must be manually invoked
+        /// </summary>
+        /// <param name="windowHeight">Window height for alignment on the (portion of) screen</param>
         public virtual void AlignVertically(int windowHeight = Constants.WINDOW_HEIGHT)
         {
             if (VerticalAlign != 0) Y = (windowHeight - Height) * VerticalAlign;
         }
 
-        /// <summary>
-        /// Draw outline
-        /// </summary>
         public override void Draw() => SplashKit.DrawRectangle(BorderColor, X, Y, Width, Height);
     }
 }

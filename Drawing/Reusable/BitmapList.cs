@@ -1,5 +1,4 @@
 ﻿using SplashKitSDK;
-using System.Collections.Generic;
 
 namespace MultiplayerMinesweeper.Drawing.Reusable
 {
@@ -28,6 +27,11 @@ namespace MultiplayerMinesweeper.Drawing.Reusable
             }
         }
 
+        /// <summary>
+        /// Get a stored bitmap from SplashKit's cache
+        /// </summary>
+        /// <param name="name">Name of the stored bitmap</param>
+        /// <returns>Bitmap from SplashKit's cache</returns>
         public static Bitmap GetBitmap(string name)
         {
             LoadBitmaps();

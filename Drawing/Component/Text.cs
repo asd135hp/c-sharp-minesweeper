@@ -40,6 +40,11 @@ namespace MultiplayerMinesweeper.Drawing.Component
         public string FontName { get; }
         public int FontSize { get; }
 
+        /// <summary>
+        /// Get text size, which is very important for automatic alignment for UI Components
+        /// because text size depends entirely on the Font and the size specified initially
+        /// </summary>
+        /// <returns></returns>
         public Size GetTextSize()
         {
             int width = SplashKit.TextWidth(_text, FontName, FontSize),

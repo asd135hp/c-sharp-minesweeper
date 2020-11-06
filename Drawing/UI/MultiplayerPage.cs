@@ -37,6 +37,10 @@ namespace MultiplayerMinesweeper.Drawing.UI
             };
         }
 
+        /// <summary>
+        /// Create new connection to the server with a certain multiplayer role
+        /// </summary>
+        /// <returns>True on connection established, false on otherwise</returns>
         public bool CreateConnection(MultiplayerRole role)
         {
             _role = role;
@@ -45,6 +49,9 @@ namespace MultiplayerMinesweeper.Drawing.UI
             return _connection.IsConnectionEstablished;
         }
 
+        /// <summary>
+        /// Close multiplayer connection
+        /// </summary>
         public void CloseConnection()
         {
             if (!_connection.IsConnectionClosed) _connection.Close();
@@ -99,6 +106,11 @@ namespace MultiplayerMinesweeper.Drawing.UI
             }
         }
 
+        /// <summary>
+        /// Modularization for drawing simplified board
+        /// </summary>
+        /// <param name="board">Stringified minesweeper board</param>
+        /// <param name="rotate90Deg">Rotates the board 90 degrees (but the squares aren't)</param>
         private void DrawBoard(string[] board, bool rotate90Deg = false)
         {
             int x = 0, y = 0;

@@ -50,10 +50,6 @@ namespace MultiplayerMinesweeper.Core.Multiplayer
             {
                 // preventing multiple threads "data racing" with closing this connection
                 // only one thread can request closing the connection
-                // the thread that is trying to close is actually a part
-                // of one player's program that is passively waiting
-                // for further instruction on closing the multiplayer game
-                // -> the last one to close is the one to delete data, simple
                 while (!_requestCloseConnection && !IsConnectionClosed) { }
                 Close(true);
             });

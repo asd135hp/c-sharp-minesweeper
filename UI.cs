@@ -219,14 +219,13 @@ namespace MultiplayerMinesweeper
         /// <summary>
         /// Pre of multiplayer page initializer
         /// </summary>
-        /// <returns></returns>
         private static UIPage PreMultiplayerPage()
         {
             UIPage page = new UIPage() { PreviousPage = Pages["base"] };
 
             page.PushUIRectangle(new UIRectangle[]
             {
-                new Button(0, 0, "Welcome to multiplayer lobby", Constants.HEADER_FONT_SIZE)
+                new Button(0, 0, "Welcome to multiplayer lobby creation", Constants.HEADER_FONT_SIZE)
                 {
                     HorizontalAlign = 0.5f,
                     VerticalAlign = 0.1f,
@@ -288,10 +287,6 @@ namespace MultiplayerMinesweeper
         /// Change to result page with used flags number, total flags number, time played and is win or not
         /// to get the accordingly result
         /// </summary>
-        /// <param name="usedFlags"></param>
-        /// <param name="totalFlags"></param>
-        /// <param name="timePlayed"></param>
-        /// <param name="isWin"></param>
         public static void ChangeToResultPage(int usedFlags, int totalFlags, int timePlayed, bool isWin)
             => CurrentPage = new ResultPage(usedFlags, totalFlags, timePlayed, isWin)
             {

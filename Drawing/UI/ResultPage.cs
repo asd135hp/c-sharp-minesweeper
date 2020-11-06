@@ -52,6 +52,9 @@ namespace MultiplayerMinesweeper.Drawing.UI
             _drawingObjects.ForEach((rect) => { rect.AlignHorizontally(); rect.AlignVertically(); });
         }
 
+        /// <summary>
+        /// A method for getting rank from game session
+        /// </summary>
         private void GetRank(int usedFlags, int totalFlags, int timePlayed)
         {
             int flagRank = (int)(usedFlags * 6.0 / totalFlags),

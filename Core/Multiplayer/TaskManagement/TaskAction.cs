@@ -12,7 +12,13 @@ namespace MultiplayerMinesweeper.Core.Multiplayer.TaskManagement
         private readonly List<Task<T>> _taskList;
         private bool _isClosing = false;
 
-        // main task management cycle where it will manage the list of tasks for multiplayer experience
+        /// <summary>
+        /// Main task management cycle where it will manage the list of tasks for multiplayer experience
+        /// </summary>
+        /// <param name="token">Cancellation token for threads (compulsory)</param>
+        /// <param name="action">A custom action with result of the cycle as a parameter</param>
+        /// <param name="taskVerification">A custom predicate to verify the task result</param>
+        /// <param name="mergeDataRate">Time between each cycle</param>
         protected TaskAction(
             CancellationToken token,
             Action<T> action,
@@ -62,8 +68,8 @@ namespace MultiplayerMinesweeper.Core.Multiplayer.TaskManagement
         }
 
         /// <summary>
-        /// Don't know how "safe" this is but the tasks that vanished will eventually be finished
-        /// and then disposed automatically by GC so there's no more concern, right?
+        /// The tasks are safely disposed from thread pool by C# when they are finished
+        /// so there are no worries about how "safe" this method is
         /// </summary>
         /// <param name="count"></param>
         private void RemoveTask(int count)

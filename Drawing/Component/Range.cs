@@ -56,6 +56,9 @@ namespace MultiplayerMinesweeper.Drawing.Component
             _buttons[1].ChangeText((--CurrentValue).ToString());
         }
 
+        /// <summary>
+        /// Automatically check which button to be clicked upon
+        /// </summary>
         public void Click() => _buttons.ForEach((button) => button.Click());
 
         public override void AlignHorizontally(int windowWidth = 1000)

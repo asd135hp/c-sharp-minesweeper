@@ -46,7 +46,8 @@ namespace MultiplayerMinesweeper.Drawing.Component
         }
 
         /// <summary>
-        /// Setting this property will automatically trigger vertical alignment if alignment is not 0
+        /// Setting this property will automatically trigger vertical alignment
+        /// if this object's vertical alignment value is not 0
         /// </summary>
         public int PaddingTop
         {
@@ -60,7 +61,8 @@ namespace MultiplayerMinesweeper.Drawing.Component
             }
         }
         /// <summary>
-        /// Setting this property will automatically trigger horizontal alignment if alignment is not 0
+        /// Setting this property will automatically trigger horizontal alignment
+        /// if this object's horizontal alignment value is not 0
         /// </summary>
         public int PaddingLeft
         {
@@ -121,7 +123,16 @@ namespace MultiplayerMinesweeper.Drawing.Component
             return x >= X && x <= X + Width && y >= Y && y <= Y + Height;
         }
 
+        /// <summary>
+        /// Invokes stored action on this button (more neat than Button.Action.Invoke())
+        /// </summary>
         public void ExecuteAction() => Action?.Invoke();
+
+        /// <summary>
+        /// Checks if the mouse is currently inside the button visually.
+        /// Then the method will automatically execute the action
+        /// (same as a normal click but on both LMB and RMB or and MBs)
+        /// </summary>
         public void Click()
         {
             if (IsMouseOver(SplashKit.MousePosition())) ExecuteAction();

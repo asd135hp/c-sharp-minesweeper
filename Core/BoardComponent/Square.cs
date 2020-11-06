@@ -30,10 +30,10 @@ namespace MultiplayerMinesweeper.Core.BoardComponent
 
         /// <summary>
         /// There must be a way to change square's state indirectly. So this method exists.
-        /// If the representative character is supported, the square will change its state
-        /// Could be unfit for this class but we will see about that
+        /// If the representative character is supported, a new square will be returned
         /// </summary>
-        /// <param name="representation"></param>
+        /// <param name="representation">A string representation of the square</param>
+        /// <returns>A new square based on provided string representation</returns>
         public static Square FromChar(string representation, Square previousSquare)
         {
             switch (representation)
@@ -52,6 +52,9 @@ namespace MultiplayerMinesweeper.Core.BoardComponent
             }
         }
 
+        /// <summary>
+        /// Checking if this object is a trivial type (not a bomb nor a flag)
+        /// </summary>
         public bool IsTrivialType() => Value != -1 && _type == SquareType.Normal;
     }
 }

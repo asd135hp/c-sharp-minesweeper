@@ -48,6 +48,9 @@ namespace MultiplayerMinesweeper.Core
             Bomb = Flag = settings.Bomb;
         }
 
+        /// <summary>
+        /// Spread out bombs to the current board
+        /// </summary>
         public void PopulateBomb()
         {
             byte[] randomBytes = new byte[2];
@@ -99,6 +102,9 @@ namespace MultiplayerMinesweeper.Core
                     actionOnEachSquare.Invoke(newX, newY);
         }
 
+        /// <summary>
+        /// When losing, reveal all of the possible bombs on the board
+        /// </summary>
         private void RevealBombs()
         {
             List<string> tempBoard = new List<string>();

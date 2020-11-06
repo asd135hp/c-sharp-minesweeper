@@ -29,6 +29,13 @@ namespace MultiplayerMinesweeper.Core.Multiplayer
         public readonly PlayerData Host, Guest;
         public readonly GameSettings GameSettings;
 
+        /// <summary>
+        /// Change game state of this object
+        /// (and possibly on the game's JSON data on the server, too)
+        /// </summary>
+        /// <param name="state">State of the game now</param>
+        /// <param name="runTask">Will the method run the task to change game state on the server?</param>
+        /// <param name="waitTask">WIll the method force main thread to wait for uploading task to be done?</param>
         public void ChangeGameState(GameState state, bool runTask = true, bool waitTask = false)
         {
             State = state;
@@ -44,7 +51,18 @@ namespace MultiplayerMinesweeper.Core.Multiplayer
             }
         }
 
+        /// <summary>
+        /// Merge with current multiplayer data object with a json string
+        /// </summary>
+        /// <param name="jsonString">JSON string with expected fields for player data</param>
+        /// <param name="role">Role of multiplayer game connection (host vs guest)</param>
         public void Merge(string jsonString, MultiplayerRole role) => Merge(SplashKit.CreateJson(jsonString), role);
+
+        /// <summary>
+        /// Merge with current multiplayer data object with a json object
+        /// </summary>
+        /// <param name="jsonString">JSON object with expected fields for player data</param>
+        /// <param name="role">Role of multiplayer game connection (host vs guest)</param>
         public void Merge(Json json, MultiplayerRole role)
         {
             List<string> board = new List<string>();
@@ -54,6 +72,14 @@ namespace MultiplayerMinesweeper.Core.Multiplayer
 
             Merge(time, flag, board.ToArray(), role);
         }
+
+        /// <summary>
+        /// Merge with current multiplayer data object with all needed data
+        /// </summary>
+        /// <param name="time">Time played for certain role</param>
+        /// <param name="flag">Flags remaining for certain role</param>
+        /// <param name="board">Stringified board for merging</param>
+        /// <param name="role">Role of multiplayer game connection (host vs guest)</param>
         public void Merge(int time, int flag, string[] board, MultiplayerRole role)
         {
             switch (role)
@@ -80,12 +106,9 @@ namespace MultiplayerMinesweeper.Core.Multiplayer
             return SplashKit.JsonToString(json);
         }
 
-        /// <summary>
-        /// Only when the game session is playing that json is parsed and merged
-        /// </summary>
-        /// <param name="json"></param>
         public void FromJson(Json json)
         {
+            // Only when the game session is playing that json is parsed and merged
             if(State == GameState.Playing)
             {
                 Json host = json.ReadObject("host"),

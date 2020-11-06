@@ -103,6 +103,9 @@ namespace MultiplayerMinesweeper.Drawing.UI
             });
         }
 
+        /// <summary>
+        /// Await the provided task. Set out error message if fails after Constants.TIMOUT
+        /// </summary>
         private bool AwaitTask(Task task)
         {
             if (!task.Wait(Constants.TIMEOUT))
@@ -113,6 +116,9 @@ namespace MultiplayerMinesweeper.Drawing.UI
             return true;
         }
 
+        /// <summary>
+        /// Display error message and provide a way out for player
+        /// </summary>
         private void DisplayErrorMessage(string message)
         {
             _drawingObjects[1] = new Button(0, 0, message, Constants.HEADER_FONT_SIZE)
@@ -137,6 +143,10 @@ namespace MultiplayerMinesweeper.Drawing.UI
             PreviousPage = _prevPage;
         }
 
+        /// <summary>
+        /// Get the queue stored on the server
+        /// </summary>
+        /// <returns></returns>
         private List<double> GetQueue()
         {
             var task = Firebase.Get("queue");
@@ -151,6 +161,12 @@ namespace MultiplayerMinesweeper.Drawing.UI
             return queue;
         }
 
+        /// <summary>
+        /// Upload everything specified as parameters
+        /// </summary>
+        /// <param name="queue">New queue</param>
+        /// <param name="id">New global game ID</param>
+        /// <param name="settings">New game settings</param>
         private void Upload(List<double> queue, int id = -1, string settings = "")
         {
             string queueStr = "[";
@@ -171,6 +187,10 @@ namespace MultiplayerMinesweeper.Drawing.UI
             }
         }
 
+        /// <summary>
+        /// Get global game id for the next multiplayer game
+        /// </summary>
+        /// <returns>Game ID</returns>
         private int GetCurrentGlobalGameID()
         {
             var task = Firebase.Get("game_id");
@@ -185,6 +205,11 @@ namespace MultiplayerMinesweeper.Drawing.UI
             return id;
         }
 
+        /// <summary>
+        /// Get random game id from the provided queue
+        /// </summary>
+        /// <param name="queue">Queue pulled from the server</param>
+        /// <returns>New game id as a guest</returns>
         private async Task<int> GetRandomGameIDFromQueue(List<double> queue)
         {
             string state;
@@ -203,6 +228,13 @@ namespace MultiplayerMinesweeper.Drawing.UI
             return id;
         }
 
+        /// <summary>
+        /// Get multiplayer page but must be awaited because the main thread must not be blocked
+        /// when multiplayer page is processing in this method
+        /// </summary>
+        /// <param name="mainMenuPage">Exit page from multiplayer page</param>
+        /// <param name="role">Role of multiplayer connection</param>
+        /// <returns>New multiplayer page</returns>
         public async Task<MultiplayerPage> GetMultiplayerPage(GraphicalPage mainMenuPage, MultiplayerRole role)
             => await Task.Run(() =>
             {

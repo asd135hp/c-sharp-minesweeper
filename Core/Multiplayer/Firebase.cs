@@ -9,6 +9,11 @@ namespace MultiplayerMinesweeper.Core.Multiplayer
 {
     public static class Firebase
     {
+        /// <summary>
+        /// Get json string onto provided Firebase URL in Constants static class (GET request)
+        /// </summary>
+        /// <param name="jsonRelativePath">Relative path to URL</param>
+        /// <returns>JSON as string</returns>
         public static async Task<string> Get(string jsonRelativePath)
         {
             using (var client = new HttpClient())
@@ -23,8 +28,19 @@ namespace MultiplayerMinesweeper.Core.Multiplayer
             }
         }
 
+        /// <summary>
+        /// Write json string onto provided Firebase URL in Constants static class (PUT request)
+        /// </summary>
+        /// <param name="jsonRelativePath">Relative path to URL</param>
+        /// <returns>true on success, false on failure</returns>
         public static async Task<bool> Put(Json json, string jsonRelativePath)
             => await Put(SplashKit.JsonToString(json), jsonRelativePath);
+        
+        /// <summary>
+        /// Write a string onto provided Firebase URL in Constants static class (PUT request)
+        /// </summary>
+        /// <param name="jsonRelativePath">Relative path to URL</param>
+        /// <returns>true on success, false on failure</returns>
         public static async Task<bool> Put(string stringToWrite, string jsonRelativePath)
         {
             var client = new HttpClient();
@@ -59,6 +75,12 @@ namespace MultiplayerMinesweeper.Core.Multiplayer
             return result;
         }
 
+        /// <summary>
+        /// Delete the whole json file on provided relative path to Firebase URL
+        /// in Constants static class (DELETE request)
+        /// </summary>
+        /// <param name="jsonRelativePath">Relative path to URL</param>
+        /// <returns>true on success, false on failure</returns>
         public static async Task<bool> Delete(string jsonRelativePath)
         {
             using (var client = new HttpClient())
