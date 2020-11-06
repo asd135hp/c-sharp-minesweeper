@@ -44,19 +44,6 @@ namespace MultiplayerMinesweeper.Core.Multiplayer
                     (CurrentData.Guest.Board as MinesweeperBoard).PopulateBomb();
                     break;
             }
-
-            // set a running thread for closing connection from another thread
-            Task.Run(() =>
-            {
-                // preventing multiple threads "data racing" with closing this connection
-                // only one thread can request closing the connection
-                // the thread that is trying to close is actually a part
-                // of one player's program that is passively waiting
-                // for further instruction on closing the multiplayer game
-                // -> the last one to close is the one to delete data, simple
-                while (!_requestCloseConnection && !IsConnectionClosed) { }
-                Close(true);
-            });
         }
 
         public readonly MultiplayerData CurrentData;
@@ -129,6 +116,19 @@ namespace MultiplayerMinesweeper.Core.Multiplayer
                     Thread.Sleep(1000);
                 }
             }, _cancelToken);
+
+            // set a running thread for closing connection from another thread
+            Task.Run(() =>
+            {
+                // preventing multiple threads "data racing" with closing this connection
+                // only one thread can request closing the connection
+                // the thread that is trying to close is actually a part
+                // of one player's program that is passively waiting
+                // for further instruction on closing the multiplayer game
+                // -> the last one to close is the one to delete data, simple
+                while (!_requestCloseConnection && !IsConnectionClosed) { }
+                Close(true);
+            });
         }
 
         /// <summary>

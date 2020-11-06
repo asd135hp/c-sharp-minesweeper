@@ -168,7 +168,8 @@ namespace MultiplayerMinesweeper.Core
         public void ToggleFlag(int x, int y)
         {
             Square selectedSquare = _board[y][x];
-            if (selectedSquare.Covered)
+            if ((selectedSquare.Covered && Flag > 0)
+            || (selectedSquare.Type == SquareType.Flag && Flag == 0))
             {
                 int flattenedPosition = y * _width + x;
                 bool isFlag = selectedSquare.Type == SquareType.Flag;

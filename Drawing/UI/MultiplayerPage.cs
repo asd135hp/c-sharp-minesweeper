@@ -29,7 +29,7 @@ namespace MultiplayerMinesweeper.Drawing.UI
             );
 
             _opponentProps = new DrawingProperties(
-                settings.BoardHeight, settings.BoardHeight, Constants.OPPONENT_SQUARE_SIZE,
+                settings.BoardHeight, settings.BoardWidth, Constants.OPPONENT_SQUARE_SIZE,
                 (int)(Constants.WINDOW_WIDTH * (1 - Constants.SCREENS_RATIO)))
             {
                 MarginLeftOffset = playerWindowWidth,
@@ -132,15 +132,20 @@ namespace MultiplayerMinesweeper.Drawing.UI
 
                 // advances to another row
                 // player
-                if(!rotate90Deg && x++ == _settings.BoardWidth - 1)
+                if(!rotate90Deg)
                 {
-                    x = 0;
-                    y++;
+                    x++;
+                    if(x == _settings.BoardWidth)
+                    {
+                        x = 0;
+                        y++;
+                    }
                     continue;
                 }
 
                 // opponent
-                if (rotate90Deg && y++ == _settings.BoardHeight - 1)
+                y++;
+                if (y == _settings.BoardWidth)
                 {
                     y = 0;
                     x++;
